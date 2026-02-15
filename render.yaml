@@ -8,12 +8,11 @@ services:
     region: oregon
     plan: free
     pythonVersion: "3.10.12"
-    rootDir: dashboard-backend
     buildCommand: |
       pip install --upgrade pip wheel setuptools
-      pip install -r requirements.txt
-      cd .. && pip install -e . --no-deps
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+      pip install -e .
+      pip install -r dashboard-backend/requirements.txt
+    startCommand: cd dashboard-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: "10000"
