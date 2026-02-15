@@ -18,9 +18,10 @@ OpenOA.egg-info
 build
 dist
 
-# Exclude large CSV data files but keep specific example files
+# Exclude large CSV data files but keep La Haute Borne example data for dashboard
 *.csv
 !examples/example_la_haute_borne_ws_speedup_factors.csv
+!examples/data/la_haute_borne/*.csv
 
 .pytest_cache
 
