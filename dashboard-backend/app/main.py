@@ -88,34 +88,49 @@ def get_cached_data(key: str, loader_func):
 def load_scada_data():
     """Load and preprocess SCADA data"""
     scada_file = os.path.join(LA_HAUTE_BORNE_PATH, "la-haute-borne-data-2014-2015.csv")
+    if not os.path.exists(scada_file):
+        raise FileNotFoundError(f"SCADA file not found: {scada_file}")
     df = pd.read_csv(scada_file)
-    df['Date_time'] = pd.to_datetime(df['Date_time'], utc=True).dt.tz_localize(None)
+    # Handle datetime parsing safely
+    df['Date_time'] = pd.to_datetime(df['Date_time'], utc=True, errors='coerce')
+    if df['Date_time'].dt.tz is not None:
+        df['Date_time'] = df['Date_time'].dt.tz_localize(None)
     return df
 
 def load_plant_data():
     """Load plant-level meter data"""
     plant_file = os.path.join(LA_HAUTE_BORNE_PATH, "plant_data.csv")
+    if not os.path.exists(plant_file):
+        raise FileNotFoundError(f"Plant file not found: {plant_file}")
     df = pd.read_csv(plant_file)
-    df['time_utc'] = pd.to_datetime(df['time_utc'], utc=True).dt.tz_localize(None)
+    df['time_utc'] = pd.to_datetime(df['time_utc'], utc=True, errors='coerce')
+    if df['time_utc'].dt.tz is not None:
+        df['time_utc'] = df['time_utc'].dt.tz_localize(None)
     return df
 
 def load_asset_data():
     """Load turbine asset information"""
     asset_file = os.path.join(LA_HAUTE_BORNE_PATH, "la-haute-borne_asset_table.csv")
+    if not os.path.exists(asset_file):
+        raise FileNotFoundError(f"Asset file not found: {asset_file}")
     return pd.read_csv(asset_file)
 
 def load_era5_data():
     """Load ERA5 reanalysis data"""
     era5_file = os.path.join(LA_HAUTE_BORNE_PATH, "era5_wind_la_haute_borne.csv")
+    if not os.path.exists(era5_file):
+        raise FileNotFoundError(f"ERA5 file not found: {era5_file}")
     df = pd.read_csv(era5_file)
-    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
     return df
 
 def load_merra2_data():
     """Load MERRA2 reanalysis data"""
     merra2_file = os.path.join(LA_HAUTE_BORNE_PATH, "merra2_la_haute_borne.csv")
+    if not os.path.exists(merra2_file):
+        raise FileNotFoundError(f"MERRA2 file not found: {merra2_file}")
     df = pd.read_csv(merra2_file)
-    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
     return df
 
 # =============================================================================
@@ -139,14 +154,33 @@ async def health_check():
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
+@app.get("/api/debug/files")
+async def debug_files():
+    """Debug endpoint to check data file availability"""
+    files = {
+        "scada": os.path.join(LA_HAUTE_BORNE_PATH, "la-haute-borne-data-2014-2015.csv"),
+        "plant": os.path.join(LA_HAUTE_BORNE_PATH, "plant_data.csv"),
+        "asset": os.path.join(LA_HAUTE_BORNE_PATH, "la-haute-borne_asset_table.csv"),
+        "era5": os.path.join(LA_HAUTE_BORNE_PATH, "era5_wind_la_haute_borne.csv"),
+        "merra2": os.path.join(LA_HAUTE_BORNE_PATH, "merra2_la_haute_borne.csv"),
+    }
+    return {
+        "la_haute_borne_path": LA_HAUTE_BORNE_PATH,
+        "example_data_path": EXAMPLE_DATA_PATH,
+        "files": {name: {"path": path, "exists": os.path.exists(path)} for name, path in files.items()},
+        "cwd": os.getcwd(),
+        "app_dir": os.path.dirname(__file__)
+    }
+
 @app.get("/api/info")
 async def get_api_info():
     """Get comprehensive information about the wind farm and available analyses"""
     if not OPENOA_AVAILABLE:
         raise HTTPException(status_code=503, detail="OpenOA not available")
     
-    asset_df = get_cached_data("asset", load_asset_data)
-    scada_df = get_cached_data("scada", load_scada_data)
+    try:
+        asset_df = get_cached_data("asset", load_asset_data)
+        scada_df = get_cached_data("scada", load_scada_data)
     
     return {
         "analyses": [
@@ -209,14 +243,16 @@ async def get_api_info():
         },
         "data": {
             "scada_period": {
-                "start": scada_df['Date_time'].min().isoformat(),
-                "end": scada_df['Date_time'].max().isoformat()
+                "start": str(scada_df['Date_time'].min()),
+                "end": str(scada_df['Date_time'].max())
             },
             "scada_records": len(scada_df),
             "reanalysis_products": ["ERA5", "MERRA2"],
             "data_resolution_minutes": 10
         }
     }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
 
 # =============================================================================
 # DATA EXPLORER ENDPOINTS
@@ -228,53 +264,56 @@ async def get_data_overview():
     if not OPENOA_AVAILABLE:
         raise HTTPException(status_code=503, detail="OpenOA not available")
     
-    scada_df = get_cached_data("scada", load_scada_data)
-    plant_df = get_cached_data("plant", load_plant_data)
-    asset_df = get_cached_data("asset", load_asset_data)
-    era5_df = get_cached_data("era5", load_era5_data)
-    merra2_df = get_cached_data("merra2", load_merra2_data)
+    try:
+        scada_df = get_cached_data("scada", load_scada_data)
+        plant_df = get_cached_data("plant", load_plant_data)
+        asset_df = get_cached_data("asset", load_asset_data)
+        era5_df = get_cached_data("era5", load_era5_data)
+        merra2_df = get_cached_data("merra2", load_merra2_data)
     
-    # Calculate total production period in years
-    date_range = (scada_df['Date_time'].max() - scada_df['Date_time'].min()).days / 365.25
-    
-    return {
-        "scada": {
-            "rows": int(len(scada_df)),
-            "columns": list(scada_df.columns),
-            "turbines": scada_df['Wind_turbine_name'].unique().tolist(),
-            "date_range": {
-                "start": scada_df['Date_time'].min().isoformat(),
-                "end": scada_df['Date_time'].max().isoformat(),
-                "years": round(date_range, 2)
+        # Calculate total production period in years
+        date_range = (scada_df['Date_time'].max() - scada_df['Date_time'].min()).days / 365.25
+        
+        return {
+            "scada": {
+                "rows": int(len(scada_df)),
+                "columns": list(scada_df.columns),
+                "turbines": scada_df['Wind_turbine_name'].unique().tolist(),
+                "date_range": {
+                    "start": str(scada_df['Date_time'].min()),
+                    "end": str(scada_df['Date_time'].max()),
+                    "years": round(date_range, 2)
+                },
+                "total_energy_gwh": round(float(scada_df['P_avg'].sum() / 1e6), 2),
+                "avg_wind_speed_ms": round(float(scada_df['Ws_avg'].mean()), 2)
             },
-            "total_energy_gwh": round(float(scada_df['P_avg'].sum() / 1e6), 2),
-            "avg_wind_speed_ms": round(float(scada_df['Ws_avg'].mean()), 2)
-        },
-        "plant_meter": {
-            "rows": int(len(plant_df)),
-            "columns": list(plant_df.columns),
-            "total_energy_gwh": round(float(plant_df['net_energy_kwh'].sum() / 1e6), 2),
-            "availability_loss_gwh": round(float(plant_df['availability_kwh'].sum() / 1e6), 3) if 'availability_kwh' in plant_df.columns else 0,
-            "curtailment_gwh": round(float(plant_df['curtailment_kwh'].sum() / 1e6), 4) if 'curtailment_kwh' in plant_df.columns else 0
-        },
-        "assets": {
-            "count": int(len(asset_df)),
-            "total_capacity_kw": int(asset_df['rated_power'].sum()) if 'rated_power' in asset_df.columns else 8200,
-            "turbines": asset_df.to_dict('records')
-        },
-        "reanalysis": {
-            "era5": {
-                "rows": int(len(era5_df)),
-                "period": f"{era5_df['datetime'].min().year}-{era5_df['datetime'].max().year}",
-                "avg_wind_speed_ms": round(float(era5_df['ws_100m'].mean()), 2)
+            "plant_meter": {
+                "rows": int(len(plant_df)),
+                "columns": list(plant_df.columns),
+                "total_energy_gwh": round(float(plant_df['net_energy_kwh'].sum() / 1e6), 2),
+                "availability_loss_gwh": round(float(plant_df['availability_kwh'].sum() / 1e6), 3) if 'availability_kwh' in plant_df.columns else 0,
+                "curtailment_gwh": round(float(plant_df['curtailment_kwh'].sum() / 1e6), 4) if 'curtailment_kwh' in plant_df.columns else 0
             },
-            "merra2": {
-                "rows": int(len(merra2_df)),
-                "period": f"{merra2_df['datetime'].min().year}-{merra2_df['datetime'].max().year}",
-                "avg_wind_speed_ms": round(float(merra2_df['ws_50m'].mean()), 2)
+            "assets": {
+                "count": int(len(asset_df)),
+                "total_capacity_kw": int(asset_df['rated_power'].sum()) if 'rated_power' in asset_df.columns else 8200,
+                "turbines": asset_df.to_dict('records')
+            },
+            "reanalysis": {
+                "era5": {
+                    "rows": int(len(era5_df)),
+                    "period": f"{era5_df['datetime'].min().year}-{era5_df['datetime'].max().year}",
+                    "avg_wind_speed_ms": round(float(era5_df['ws_100m'].mean()), 2)
+                },
+                "merra2": {
+                    "rows": int(len(merra2_df)),
+                    "period": f"{merra2_df['datetime'].min().year}-{merra2_df['datetime'].max().year}",
+                    "avg_wind_speed_ms": round(float(merra2_df['ws_50m'].mean()), 2)
+                }
             }
         }
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in data overview: {str(e)}")
 
 @app.get("/api/data/scada/summary")
 async def get_scada_summary():
