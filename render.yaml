@@ -1,6 +1,3 @@
-# Render Blueprint
-# https://render.com/docs/blueprint-spec
-
 services:
   - type: web
     name: openoa-backend
@@ -8,13 +5,10 @@ services:
     region: oregon
     plan: free
     pythonVersion: "3.10.12"
-    buildCommand: |
-      pip install --upgrade pip wheel setuptools
-      pip install -e .
-      pip install -r dashboard-backend/requirements.txt
-    startCommand: cd dashboard-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: "pip install --upgrade pip wheel setuptools && pip install -e . && pip install -r dashboard-backend/requirements.txt"
+    startCommand: "cd dashboard-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: PORT
         value: "10000"
-    healthCheckPath: /health
-    autoDeploy: true
