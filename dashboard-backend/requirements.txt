@@ -1,24 +1,25 @@
 # OpenOA Dashboard Backend - Render Deployment
-# Using pre-built wheels to avoid compilation issues
+# Using pre-built wheels for Python 3.10
 
 # Core web framework
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-python-multipart==0.0.9
-pydantic==2.9.0
-pydantic-settings==2.5.0
-python-dotenv==1.0.1
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.5.3
+python-dotenv==1.0.0
 
-# Data processing - use versions with pre-built wheels
-pandas==2.1.4
-numpy==1.26.4
+# Data processing - stable versions with pre-built wheels
+pandas==2.0.3
+numpy==1.24.3
 scipy==1.11.4
 scikit-learn==1.3.2
 
-# Additional dependencies
-matplotlib==3.8.2
+# Visualization and stats
+matplotlib==3.7.3
 statsmodels==0.14.1
+
+# Utilities
 tqdm==4.66.1
-attrs==23.2.0
+attrs==23.1.0
 tabulate==0.9.0
 
