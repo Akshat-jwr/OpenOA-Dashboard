@@ -73,6 +73,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [selectedTurbine, setSelectedTurbine] = useState<string | null>(null);
+  
+  // Track initial data loading
+  const [initialLoading, setInitialLoading] = useState({
+    plantInfo: true,
+    dataOverview: true,
+    scadaSummary: true,
+    powerCurve: true,
+    windRose: true,
+    reanalysis: true,
+    availability: true,
+  });
 
   // Fetch initial data
   useEffect(() => {
@@ -92,6 +103,8 @@ export default function Dashboard() {
       setPlantInfo(data.plant);
     } catch (err) {
       console.error('Failed to fetch plant info:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, plantInfo: false }));
     }
   };
 
@@ -102,6 +115,8 @@ export default function Dashboard() {
       setDataOverview(data);
     } catch (err) {
       console.error('Failed to fetch data overview:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, dataOverview: false }));
     }
   };
 
@@ -112,6 +127,8 @@ export default function Dashboard() {
       setScadaSummary(data);
     } catch (err) {
       console.error('Failed to fetch SCADA summary:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, scadaSummary: false }));
     }
   };
 
@@ -125,6 +142,8 @@ export default function Dashboard() {
       setPowerCurve(data);
     } catch (err) {
       console.error('Failed to fetch power curve:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, powerCurve: false }));
     }
   };
 
@@ -135,6 +154,8 @@ export default function Dashboard() {
       setWindRose(data);
     } catch (err) {
       console.error('Failed to fetch wind rose:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, windRose: false }));
     }
   };
 
@@ -145,6 +166,8 @@ export default function Dashboard() {
       setReanalysis(data);
     } catch (err) {
       console.error('Failed to fetch reanalysis:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, reanalysis: false }));
     }
   };
 
@@ -155,6 +178,8 @@ export default function Dashboard() {
       setAvailability(data);
     } catch (err) {
       console.error('Failed to fetch availability:', err);
+    } finally {
+      setInitialLoading(prev => ({ ...prev, availability: false }));
     }
   };
 
@@ -325,6 +350,7 @@ export default function Dashboard() {
                 subtitle={`${plantInfo?.num_turbines || 4} × Senvion MM82`}
                 icon={<Wind />}
                 color="blue"
+                isLoading={initialLoading.plantInfo}
               />
               <StatCard
                 title="Total Energy"
@@ -332,6 +358,7 @@ export default function Dashboard() {
                 subtitle={`${dataOverview?.scada?.date_range?.years || 2} years`}
                 icon={<Zap />}
                 color="green"
+                isLoading={initialLoading.dataOverview}
               />
               <StatCard
                 title="SCADA Records"
@@ -339,6 +366,7 @@ export default function Dashboard() {
                 subtitle="10-min resolution"
                 icon={<Database />}
                 color="purple"
+                isLoading={initialLoading.dataOverview}
               />
               <StatCard
                 title="Avg Wind"
@@ -346,6 +374,7 @@ export default function Dashboard() {
                 subtitle={`CF: ${scadaSummary?.overall?.avg_capacity_factor_percent || 0}%`}
                 icon={<Activity />}
                 color="amber"
+                isLoading={initialLoading.dataOverview || initialLoading.scadaSummary}
               />
             </div>
 
@@ -357,7 +386,9 @@ export default function Dashboard() {
                   <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                   Monthly Energy Production
                 </h3>
-                {scadaSummary?.monthly_data && (
+                {initialLoading.scadaSummary ? (
+                  <ChartLoader height={200} />
+                ) : scadaSummary?.monthly_data ? (
                   <ResponsiveContainer width="100%" height={200} className="sm:!h-[280px]">
                     <ComposedChart data={scadaSummary.monthly_data.slice(-24)} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -373,6 +404,8 @@ export default function Dashboard() {
                       <Line yAxisId="right" type="monotone" dataKey="avg_wind_speed_ms" name="Wind (m/s)" stroke="#10B981" strokeWidth={2} dot={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-slate-500 text-sm">No data available</div>
                 )}
               </div>
 
@@ -382,7 +415,9 @@ export default function Dashboard() {
                   <LineChart className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
                   Power Curve
                 </h3>
-                {powerCurve?.measured_curve && (
+                {initialLoading.powerCurve ? (
+                  <ChartLoader height={200} />
+                ) : powerCurve?.measured_curve ? (
                   <ResponsiveContainer width="100%" height={200} className="sm:!h-[280px]">
                     <ComposedChart data={powerCurve.measured_curve} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -398,6 +433,8 @@ export default function Dashboard() {
                       <Line type="monotone" dataKey="power_mean" stroke="#10B981" strokeWidth={2} name="Mean" dot={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-slate-500 text-sm">No data available</div>
                 )}
               </div>
             </div>
@@ -408,6 +445,19 @@ export default function Dashboard() {
                 <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
                 Turbine Performance
               </h3>
+              {initialLoading.scadaSummary ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="bg-slate-700/30 rounded-lg p-2 sm:p-4 border border-slate-600/50 animate-pulse">
+                      <div className="h-4 w-20 bg-slate-600/50 rounded mb-3" />
+                      <div className="space-y-2">
+                        <div className="h-3 w-full bg-slate-600/30 rounded" />
+                        <div className="h-3 w-3/4 bg-slate-600/30 rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                 {scadaSummary?.turbine_statistics?.map((turbine: any) => (
                   <div key={turbine.turbine_id} className="bg-slate-700/30 rounded-lg p-2 sm:p-4 border border-slate-600/50">
@@ -442,6 +492,7 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
             {/* Quick Analysis */}
@@ -490,30 +541,34 @@ export default function Dashboard() {
               <DataSourceCard
                 title="SCADA Data"
                 records={dataOverview?.scada?.rows}
-                period={`${dataOverview?.scada?.date_range?.start?.slice(0, 10)} to ${dataOverview?.scada?.date_range?.end?.slice(0, 10)}`}
+                period={`${dataOverview?.scada?.date_range?.start?.slice(0, 10) || ''} to ${dataOverview?.scada?.date_range?.end?.slice(0, 10) || ''}`}
                 icon={<Database className="w-4 h-4 sm:w-5 sm:h-5" />}
                 status="available"
+                isLoading={initialLoading.dataOverview}
               />
               <DataSourceCard
                 title="Plant Meter"
                 records={dataOverview?.plant_meter?.rows}
-                period={`${dataOverview?.plant_meter?.total_energy_gwh} GWh`}
+                period={`${dataOverview?.plant_meter?.total_energy_gwh || 0} GWh`}
                 icon={<Gauge className="w-4 h-4 sm:w-5 sm:h-5" />}
                 status="available"
+                isLoading={initialLoading.dataOverview}
               />
               <DataSourceCard
                 title="ERA5"
                 records={dataOverview?.reanalysis?.era5?.rows}
-                period={dataOverview?.reanalysis?.era5?.period}
+                period={dataOverview?.reanalysis?.era5?.period || ''}
                 icon={<Activity className="w-4 h-4 sm:w-5 sm:h-5" />}
                 status="available"
+                isLoading={initialLoading.dataOverview}
               />
               <DataSourceCard
                 title="MERRA2"
                 records={dataOverview?.reanalysis?.merra2?.rows}
-                period={dataOverview?.reanalysis?.merra2?.period}
+                period={dataOverview?.reanalysis?.merra2?.period || ''}
                 icon={<Activity className="w-4 h-4 sm:w-5 sm:h-5" />}
                 status="available"
+                isLoading={initialLoading.dataOverview}
               />
             </div>
 
@@ -525,7 +580,10 @@ export default function Dashboard() {
                   <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
                   Wind Rose
                 </h3>
-                {windRose?.data && (
+                {initialLoading.windRose ? (
+                  <ChartLoader height={280} />
+                ) : windRose?.data ? (
+                  <>
                   <ResponsiveContainer width="100%" height={280}>
                     <RadarChart data={windRose.data}>
                       <PolarGrid stroke="#374151" />
@@ -544,11 +602,12 @@ export default function Dashboard() {
                       />
                     </RadarChart>
                   </ResponsiveContainer>
-                )}
-                {windRose && (
                   <div className="mt-3 text-center text-xs sm:text-sm text-slate-400">
                     Predominant: <span className="text-white font-medium">{windRose.predominant_direction}°</span> ({windRose.predominant_frequency}%)
                   </div>
+                  </>
+                ) : (
+                  <div className="h-[280px] flex items-center justify-center text-slate-500 text-sm">No data available</div>
                 )}
               </div>
 
@@ -558,7 +617,9 @@ export default function Dashboard() {
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
                   Long-Term Wind (ERA5)
                 </h3>
-                {reanalysis?.era5?.annual_data && (
+                {initialLoading.reanalysis ? (
+                  <ChartLoader height={280} />
+                ) : reanalysis?.era5?.annual_data ? (
                   <ResponsiveContainer width="100%" height={280}>
                     <ComposedChart data={reanalysis.era5.annual_data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -574,8 +635,10 @@ export default function Dashboard() {
                       <Line yAxisId="right" type="monotone" dataKey="anomaly_percent" name="Anomaly (%)" stroke="#F59E0B" strokeWidth={2} />
                     </ComposedChart>
                   </ResponsiveContainer>
+                ) : (
+                  <div className="h-[280px] flex items-center justify-center text-slate-500 text-sm">No data available</div>
                 )}
-                {reanalysis?.era5 && (
+                {reanalysis?.era5 && !initialLoading.reanalysis && (
                   <div className="mt-3 text-center text-xs sm:text-sm text-slate-400">
                     LT Mean: <span className="text-white font-medium">{reanalysis.era5.long_term_mean_ws_ms} m/s</span> ({reanalysis.era5.total_years} yrs)
                   </div>
@@ -589,7 +652,10 @@ export default function Dashboard() {
                 <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
                 Availability & Curtailment
               </h3>
-              {availability?.monthly_data && (
+              {initialLoading.availability ? (
+                <ChartLoader height={250} />
+              ) : availability?.monthly_data ? (
+                <>
                 <ResponsiveContainer width="100%" height={250}>
                   <ComposedChart data={availability.monthly_data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -606,7 +672,6 @@ export default function Dashboard() {
                     <Line yAxisId="right" type="monotone" dataKey="availability_percent" name="Avail (%)" stroke="#10B981" strokeWidth={2} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              )}
               {availability?.overall && (
                 <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-4 text-center">
                   <div className="p-2 sm:p-3 bg-slate-700/30 rounded-lg">
@@ -622,6 +687,10 @@ export default function Dashboard() {
                     <div className="text-[10px] sm:text-sm text-slate-400">Curtailment</div>
                   </div>
                 </div>
+              )}
+                </>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-slate-500 text-sm">No data available</div>
               )}
             </div>
           </div>
@@ -875,7 +944,7 @@ export default function Dashboard() {
 }
 
 // Helper Components
-function StatCard({ title, value, subtitle, icon, color }: { title: string; value: string; subtitle: string; icon: React.ReactNode; color: string }) {
+function StatCard({ title, value, subtitle, icon, color, isLoading = false }: { title: string; value: string; subtitle: string; icon: React.ReactNode; color: string; isLoading?: boolean }) {
   const colorClasses: Record<string, string> = {
     blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
     green: 'from-green-500/20 to-green-600/20 border-green-500/30',
@@ -895,8 +964,17 @@ function StatCard({ title, value, subtitle, icon, color }: { title: string; valu
       <div className="flex items-start justify-between gap-1">
         <div className="min-w-0 flex-1">
           <p className="text-slate-400 text-[10px] sm:text-sm truncate">{title}</p>
-          <p className="text-base sm:text-2xl font-bold text-white mt-0.5 truncate">{value}</p>
-          <p className="text-slate-500 text-[9px] sm:text-xs mt-0.5 truncate">{subtitle}</p>
+          {isLoading ? (
+            <div className="mt-0.5">
+              <div className="h-6 sm:h-8 w-20 sm:w-28 bg-slate-700/50 rounded animate-pulse" />
+              <div className="h-3 sm:h-4 w-14 sm:w-20 bg-slate-700/30 rounded animate-pulse mt-1.5" />
+            </div>
+          ) : (
+            <>
+              <p className="text-base sm:text-2xl font-bold text-white mt-0.5 truncate">{value}</p>
+              <p className="text-slate-500 text-[9px] sm:text-xs mt-0.5 truncate">{subtitle}</p>
+            </>
+          )}
         </div>
         <div className={`${iconColors[color]} flex-shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-5 sm:[&>svg]:h-5`}>{icon}</div>
       </div>
@@ -904,27 +982,53 @@ function StatCard({ title, value, subtitle, icon, color }: { title: string; valu
   );
 }
 
-function DataSourceCard({ title, records, period, icon, status }: { title: string; records?: number; period: string; icon: React.ReactNode; status: string }) {
+function ChartLoader({ height = 280 }: { height?: number }) {
+  return (
+    <div className={`flex flex-col items-center justify-center`} style={{ height }}>
+      <div className="relative">
+        <div className="w-10 h-10 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Activity className="w-4 h-4 text-blue-400 animate-pulse" />
+        </div>
+      </div>
+      <p className="text-slate-400 text-sm mt-3 animate-pulse">Loading data...</p>
+    </div>
+  );
+}
+
+function DataSourceCard({ title, records, period, icon, status, isLoading = false }: { title: string; records?: number; period: string; icon: React.ReactNode; status: string; isLoading?: boolean }) {
   return (
     <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-3 sm:p-4">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
         <div className="p-1.5 sm:p-2 bg-slate-700 rounded-lg text-blue-400 [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5">{icon}</div>
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-white text-sm sm:text-base truncate">{title}</h4>
-          <span className="text-[10px] sm:text-xs text-green-400 flex items-center gap-1">
-            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-green-400 rounded-full flex-shrink-0" />
-            {status}
-          </span>
+          {isLoading ? (
+            <div className="h-3 w-16 bg-slate-700/50 rounded animate-pulse mt-0.5" />
+          ) : (
+            <span className="text-[10px] sm:text-xs text-green-400 flex items-center gap-1">
+              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-green-400 rounded-full flex-shrink-0" />
+              {status}
+            </span>
+          )}
         </div>
       </div>
       <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
         <div className="flex justify-between text-slate-400">
           <span>Records</span>
-          <span className="text-white">{records?.toLocaleString() || 'N/A'}</span>
+          {isLoading ? (
+            <div className="h-4 w-20 bg-slate-700/50 rounded animate-pulse" />
+          ) : (
+            <span className="text-white">{records?.toLocaleString() || 'N/A'}</span>
+          )}
         </div>
         <div className="flex justify-between text-slate-400">
           <span>Period</span>
-          <span className="text-white text-[10px] sm:text-xs">{period}</span>
+          {isLoading ? (
+            <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse" />
+          ) : (
+            <span className="text-white text-[10px] sm:text-xs">{period}</span>
+          )}
         </div>
       </div>
     </div>
