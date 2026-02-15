@@ -7,14 +7,15 @@ services:
     runtime: python
     region: oregon
     plan: free
+    pythonVersion: "3.11.6"
     buildCommand: |
-      pip install --upgrade pip
+      pip install --upgrade pip wheel setuptools
       pip install -r dashboard-backend/requirements.txt
-      pip install -e .
+      pip install -e . --no-build-isolation
     startCommand: cd dashboard-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.6"
       - key: PORT
         value: "10000"
     healthCheckPath: /health
