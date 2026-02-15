@@ -5,7 +5,7 @@
   "devCommand": "npm run dev",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://openoa-backend.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://openoa-dashboard-agdx.onrender.com"
   },
   "headers": [
     {
