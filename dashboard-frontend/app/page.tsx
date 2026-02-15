@@ -321,7 +321,7 @@ export default function Dashboard() {
                 }`}
               >
                 <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline sm:inline">{tab.name}</span>
+                {/* <span className="hidden xs:inline sm:inline">{tab.name}</span> */}
                 <span className="xs:hidden">{tab.name.split(' ')[0]}</span>
               </button>
             ))}
