@@ -1,0 +1,13 @@
+
+> dashboard-frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.145.103.142:3000
+
+✓ Starting...
+✓ Ready in 771ms
+ GET / 200 in 489ms (compile: 365ms, render: 124ms)
+ GET / 200 in 162ms (compile: 15ms, render: 147ms)
+✓ Compiled in 523ms

@@ -1,0 +1,76 @@
+INFO:     Started server process [73476]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/dashboard-backend/app/main.py:166: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  analysis_id = f"{request.analysis_type}_{datetime.utcnow().timestamp()}"
+
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/dashboard-backend/app/main.py:179: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp=datetime.utcnow().isoformat(),
+
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/.venv/lib/python3.13/site-packages/pydantic/main.py:1113: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+  warnings.warn('The `dict` method is deprecated; use `model_dump` instead.', category=PydanticDeprecatedSince20)
+
+Meter data columns before processing: ['time_utc', 'net_energy_kwh', 'availability_kwh', 'curtailment_kwh']
+Found time column: time_utc
+Meter data columns: ['time_utc', 'net_energy_kwh', 'availability_kwh', 'curtailment_kwh']
+Meter data shape: (105120, 4)
+INFO:     127.0.0.1:56893 - "POST /api/run-analysis HTTP/1.1" 200 OK
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.plant:Skipping data validation for scada because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for meter because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for tower because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for status because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for curtail because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for asset because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for reanalysis because `analysis_type=None`.
+INFO:openoa.plant:Validating the frequency of the scada data
+INFO:openoa.plant:Converting column names to OpenOA conventions
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/dashboard-backend/app/main.py:179: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp=datetime.utcnow().isoformat(),
+
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/.venv/lib/python3.13/site-packages/pydantic/main.py:1113: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+  warnings.warn('The `dict` method is deprecated; use `model_dump` instead.', category=PydanticDeprecatedSince20)
+
+Loaded SCADA file: /Users/akshatjiwrajka/programming/OpenOA/dashboard-backend/app/../../examples/data/la_haute_borne/la-haute-borne-data-2014-2015.csv
+Columns: ['Wind_turbine_name', 'Date_time', 'Ba_avg', 'P_avg', 'Ws_avg', 'Va_avg', 'Ot_avg', 'Ya_avg', 'Wa_avg']
+Rows: 420480
+Using energy columns: ['P_avg']
+INFO:     127.0.0.1:56902 - "POST /api/run-analysis HTTP/1.1" 200 OK
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.schema.metadata:No matches for provided kwarg inputs: []
+INFO:openoa.plant:Skipping data validation for scada because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for meter because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for tower because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for status because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for curtail because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for asset because `analysis_type=None`.
+INFO:openoa.plant:Skipping data validation for reanalysis because `analysis_type=None`.
+INFO:openoa.plant:Converting column names to OpenOA conventions
+INFO:     127.0.0.1:56904 - "POST /api/run-analysis HTTP/1.1" 200 OK
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/dashboard-backend/app/main.py:179: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp=datetime.utcnow().isoformat(),
+
+WARNING:py.warnings:/Users/akshatjiwrajka/programming/OpenOA/.venv/lib/python3.13/site-packages/pydantic/main.py:1113: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+  warnings.warn('The `dict` method is deprecated; use `model_dump` instead.', category=PydanticDeprecatedSince20)
+
+Meter data columns before processing: ['time_utc', 'net_energy_kwh', 'availability_kwh', 'curtailment_kwh']
+Found time column: time_utc
+Meter data columns: ['time_utc', 'net_energy_kwh', 'availability_kwh', 'curtailment_kwh']
+Meter data shape: (105120, 4)
+INFO:     127.0.0.1:56906 - "POST /api/run-analysis HTTP/1.1" 200 OK
