@@ -182,22 +182,22 @@ async def get_api_info():
         asset_df = get_cached_data("asset", load_asset_data)
         scada_df = get_cached_data("scada", load_scada_data)
     
-    return {
-        "analyses": [
-            {
-                "id": "monte_carlo_aep",
-                "name": "Monte Carlo AEP Analysis",
-                "description": "Long-term Annual Energy Production estimation with uncertainty quantification using Monte Carlo simulation",
-                "category": "energy_assessment",
-                "icon": "⚡"
-            },
-            {
-                "id": "electrical_losses",
-                "name": "Electrical Losses Analysis",
-                "description": "Calculate electrical losses by comparing turbine SCADA energy to revenue meter readings",
-                "category": "losses",
-                "icon": "🔌"
-            },
+        return {
+            "analyses": [
+                {
+                    "id": "monte_carlo_aep",
+                    "name": "Monte Carlo AEP Analysis",
+                    "description": "Long-term Annual Energy Production estimation with uncertainty quantification using Monte Carlo simulation",
+                    "category": "energy_assessment",
+                    "icon": "⚡"
+                },
+                {
+                    "id": "electrical_losses",
+                    "name": "Electrical Losses Analysis",
+                    "description": "Calculate electrical losses by comparing turbine SCADA energy to revenue meter readings",
+                    "category": "losses",
+                    "icon": "🔌"
+                },
             {
                 "id": "wake_losses",
                 "name": "Wake Losses Analysis",
